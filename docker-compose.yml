@@ -1,0 +1,97 @@
+version: '3'
+services:
+  #PHP Service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: php_service
+    container_name: app
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+    working_dir: /var/www
+    volumes:
+      - ./citragunalestari:/var/www
+      - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
+      - .:/aplication:delegated
+    networks:
+      - laravel
+  #Nginx Service
+  webserver:
+    image: nginx:alpine
+    container_name: webserver
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "8070:80"
+    volumes:
+      - ./citragunalestari:/var/www
+      - ./nginx/:/etc/nginx/conf.d/
+      - .:/aplication:delegated
+    networks:
+      - laravel
+  #MySQL Service
+  # db:
+  #   platform: linux/x86_64
+  #   image: mysql:5.7.39
+  #   # image: mysql:8.0.29-oracle
+  #   container_name: db
+  #   restart: always
+  #   tty: true
+  #   ports:
+  #     - "43061:3306"
+  #   volumes:
+  #     - ./mysql:/var/lib/mysql
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: root
+  #     MYSQL_PASSWORD: root
+  #     MYSQL_DATABASE: cgl
+  #     MYSQL_USER: cgldb
+  #     SERVICE_TAGS: dev
+  #     SERVICE_NAME: mysql
+  #   networks:
+  #     - laravel
+  db:
+    platform: linux/x86_64
+    image: mysql
+    container_name: db
+    restart: always
+    tty: true
+    ports:
+      - "3300:3306"
+    environment:
+      # MYSQL_DATABASE: cgl
+      MYSQL_PASSWORD: cglserver1234
+      # MYSQL_USER: root
+      MYSQL_ROOT_PASSWORD: cglserver1234
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - ./mysql:/var/lib/mysql
+    networks:
+    - laravel
+  # phpmyadmin:
+  #   container_name: phpmyadmin
+  #   image: phpmyadmin/phpmyadmin
+  #   ports:
+  #     - "7001:80"
+  #   links:
+  #     - db:db
+  #   environment:
+  #     MYSQL_USER: cgldb
+  #     MYSQL_PASSWORD: cglserver1234
+  #     MYSQL_ROOT_PASSWORD: cglserver1234
+  #     UPLOAD_LIMIT: 3000000000
+  #   networks:
+  #     - laravel
+  #Docker Networks
+networks:
+  laravel:
+    driver: bridge
+  #Volumes
+volumes:
+  lbdata:
+    driver: local
